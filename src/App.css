@@ -1,0 +1,23 @@
+#root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+@media print {
+  @page {
+    size: auto;
+    margin: 0;
+  }
+  
+  body {
+    background-color: white;
+    color: black;
+  }
+
+  button, 
+  .no-print {
+    display: none !important;
+  }
+}
