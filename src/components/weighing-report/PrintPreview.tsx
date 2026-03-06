@@ -10,10 +10,10 @@ interface PrintPreviewProps {
     grossWeight: number;
   };
   onClose: () => void;
-  onPrint: () => void;
+  onQzPrint: () => void;
 }
 
-export const PrintPreview = ({ data, onClose, onPrint }: PrintPreviewProps) => {
+export const PrintPreview = ({ data, onClose, onQzPrint }: PrintPreviewProps) => {
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-md">
       <div className="bg-white rounded-3xl shadow-2xl max-w-[340px] w-full overflow-hidden flex flex-col max-h-[95vh]">
@@ -28,9 +28,7 @@ export const PrintPreview = ({ data, onClose, onPrint }: PrintPreviewProps) => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-12 bg-slate-50 flex justify-center">
-          {/* Mô phỏng giấy in nhiệt thực tế 58mm */}
           <div className="bg-white shadow-[0_0_20px_rgba(0,0,0,0.05)] px-3 py-6 w-[54mm] min-h-[140mm] text-black font-mono text-[9px] leading-[1.3] select-none border border-slate-100 relative">
-            {/* Răng cưa giả */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-[radial-gradient(circle,transparent_2px,white_2px)] bg-[length:6px_6px] bg-repeat-x -mt-0.5"></div>
 
             <div className="flex justify-between font-bold mb-1 uppercase tracking-tighter text-[10px]">
@@ -96,11 +94,12 @@ export const PrintPreview = ({ data, onClose, onPrint }: PrintPreviewProps) => {
 
         <div className="p-6 flex flex-col gap-3 bg-white border-t border-slate-50">
           <button
-            onClick={onPrint}
-            className="w-full h-12 bg-slate-900 text-white rounded-2xl text-xs font-bold hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-200 uppercase tracking-widest"
+            onClick={onQzPrint}
+            className="w-full h-12 bg-amber-500 text-white rounded-2xl text-xs font-bold hover:bg-amber-600 transition-all active:scale-95 shadow-xl shadow-amber-200 uppercase tracking-widest"
           >
-            In Phiếu Thật
+            In Nhanh Chuyên Nghiệp (QZ Tray)
           </button>
+
           <button
             onClick={onClose}
             className="w-full h-10 text-[10px] font-bold text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest"

@@ -1,5 +1,5 @@
 {
-  "name": "fe-ai-tutor",
+  "name": "weigh-print-pro",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -18,19 +18,22 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.575.0",
+    "qz-tray": "^2.2.5",
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwind-merge": "^3.5.0",
-    "tailwindcss": "^4.2.1"
+    "tailwindcss": "^4.2.1",
+    "yup": "^1.7.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@fission-ai/openspec": "^1.2.0",
     "@types/node": "^24.10.1",
+    "@types/qz-tray": "^2.2.2",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react-swc": "^4.2.2",
+    "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",

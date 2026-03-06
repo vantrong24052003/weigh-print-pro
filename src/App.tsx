@@ -5,21 +5,24 @@ import type { AxleData } from '@/types'
 import { weighingSchema } from '@/schemas/weighingSchema'
 import { AxleRow } from '@/components/weighing-report/AxleRow'
 import { PrintPreview } from '@/components/weighing-report/PrintPreview'
-import { useSerialPrinter } from '@/hooks/useSerialPrinter'
+import { useQzPrinter } from '@/hooks/useQzPrinter'
 import { encodeWeighingReport } from '@/utils/escpos'
 import '@/App.css'
 
 export default function App() {
   const [form, setForm] = useState({
-    licensePlate: '',
+    licensePlate: '92A-123.45',
     date: '',
     time: '',
-    tempAxleCount: 0,
-    axles: [] as AxleData[]
+    tempAxleCount: 2,
+    axles: [
+      { left: '1000', right: '1200' },
+      { left: '2000', right: '1800' }
+    ] as AxleData[]
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showPreview, setShowPreview] = useState(false)
-  const { connect, disconnect, print: serialPrint, isConnected, isSupported, error: serialError, deviceInfo } = useSerialPrinter()
+  const { connect, disconnect, print: qzPrint, isConnected, error: qzError } = useQzPrinter()
 
   useEffect(() => {
     setForm(prev => ({ ...prev, date: getCurrentDate(), time: getCurrentTime() }))
@@ -60,10 +63,10 @@ export default function App() {
 
       if (isConnected) {
         const bytes = encodeWeighingReport({ ...form, grossWeight })
-        await serialPrint(bytes)
+        await qzPrint(bytes)
         setShowPreview(false)
       } else {
-        alert('Chưa kết nối máy in! Vui lòng nhấn nút "KẾT NỐI MÁY IN" ở góc trên bên phải.')
+        alert('Chưa kết nối QZ Tray! Vui lòng nhấn nút "KẾT NỐI QZ TRAY" ở góc trên bên phải.')
       }
     } catch (err) {
       if (err instanceof yup.ValidationError) {
@@ -93,28 +96,24 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 p-4 font-sans print:p-0">
-      <div className="max-w-md mx-auto space-y-6 print:hidden">
+    <div className="min-h-screen bg-white text-slate-900 p-4 font-sans">
+      <div className="max-w-md mx-auto space-y-6">
         <header className="border-b border-slate-200 pb-4 flex justify-between items-end">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">PHIẾU CÂN XE</h1>
             <p className="text-slate-500 text-sm">Nhập liệu và in phiếu cân trạm</p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            {isSupported ? (
-              <button
-                onClick={isConnected ? disconnect : connect}
-                className={`text-[10px] font-bold px-3 py-1 rounded-full border transition-all ${isConnected
-                  ? 'bg-green-50 border-green-200 text-green-700'
-                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-900'
-                  }`}
-              >
-                {isConnected ? `● AIMO (VID:${deviceInfo?.vid})` : '○ KẾT NỐI MÁY IN'}
-              </button>
-            ) : (
-              <span className="text-[10px] text-red-500 font-bold uppercase">Trình duyệt không hỗ trợ in trực tiếp</span>
-            )}
-            {serialError && <span className="text-[8px] text-red-400 font-medium max-w-[150px] text-right">{serialError}</span>}
+            <button
+              onClick={isConnected ? disconnect : connect}
+              className={`text-[10px] font-bold px-3 py-1 rounded-full border transition-all ${isConnected
+                ? 'bg-green-50 border-green-200 text-green-700'
+                : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-900'
+                }`}
+            >
+              {isConnected ? `● QZ TRAY (AIMO)` : '○ KẾT NỐI QZ TRAY'}
+            </button>
+            {qzError && <span className="text-[8px] text-red-400 font-medium max-w-[150px] text-right">{qzError}</span>}
           </div>
         </header>
 
@@ -215,7 +214,7 @@ export default function App() {
                 Xem trước
               </button>
               <button
-                onClick={handlePrint}
+                onClick={handleShowPreview}
                 className="h-12 px-6 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors font-bold uppercase tracking-wider text-xs shadow-sm active:scale-95"
               >
                 In Phiếu
@@ -233,7 +232,7 @@ export default function App() {
         <PrintPreview
           data={{ ...form, grossWeight }}
           onClose={() => setShowPreview(false)}
-          onPrint={handlePrint}
+          onQzPrint={handlePrint}
         />
       )}
     </div>

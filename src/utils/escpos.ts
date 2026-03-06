@@ -1,9 +1,7 @@
 import type { AxleData } from '@/types'
 import { formatDate } from './date'
 
-/**
- * ESC/POS Command definitions for thermal printers
- */
+
 export const ESC = 0x1B;
 export const GS = 0x1D;
 export const LF = 0x0A;

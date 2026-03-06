@@ -4,20 +4,3 @@
   padding: 0;
   text-align: left;
 }
-
-@media print {
-  @page {
-    size: auto;
-    margin: 0;
-  }
-  
-  body {
-    background-color: white;
-    color: black;
-  }
-
-  button, 
-  .no-print {
-    display: none !important;
-  }
-}
