@@ -37,10 +37,16 @@ export const useQzPrinter = () => {
       }
 
       setError(null);
-      const printers = await qz.printers.find("AIMO");
-      const printerName = typeof printers === 'string' ? printers : printers[0];
+      let printerName = "AIMO";
+      try {
+        const printers = await qz.printers.find("AIMO");
+        printerName = typeof printers === 'string' ? printers : printers[0];
+      } catch (findErr) {
+        console.warn("Không tìm thấy máy in AIMO, tự động chuyển sang máy in mặc định.");
+        printerName = await qz.printers.getDefault();
+      }
 
-      const config = qz.configs.create(printerName || "AIMO");
+      const config = qz.configs.create(printerName);
       const hexString = Array.from(data).map(b => b.toString(16).padStart(2, '0')).join('');
       const printData: any = [
         { type: 'raw', format: 'hex', data: hexString }

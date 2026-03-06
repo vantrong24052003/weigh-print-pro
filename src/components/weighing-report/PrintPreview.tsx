@@ -29,8 +29,8 @@ export const PrintPreview = ({ data, no = '', onClose, onQzPrint }: PrintPreview
 
 
 
-        <div className="flex-1 overflow-y-auto bg-slate-100 flex justify-center py-6 px-4">
-          <div className="bg-white shadow-md" style={{ width: 'fit-content' }}>
+        <div className="flex-1 overflow-y-auto bg-slate-100 flex flex-col items-center py-6 px-4">
+          <div className="bg-white shadow-xl w-fit h-fit min-h-fit mb-12 relative flex-shrink-0">
             <div style={{ height: 6, background: 'repeating-linear-gradient(90deg,#cbd5e1 0,#cbd5e1 4px,white 4px,white 8px)' }} />
             <pre
               style={{

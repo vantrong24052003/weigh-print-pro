@@ -55,6 +55,12 @@ export default function App() {
   const validateForm = async () => {
     try {
       setErrors({})
+
+      if (form.tempAxleCount > 0 && form.axles.length !== form.tempAxleCount) {
+        setErrors({ tempAxleCount: 'Vui lòng bấm nút "Thêm" để tạo form nhập số liệu các trục' })
+        return false
+      }
+
       await weighingSchema.validate(form, { abortEarly: false })
       return true
     } catch (err) {
@@ -67,6 +73,22 @@ export default function App() {
       }
       return false
     }
+  }
+
+  const handleFillTestData = () => {
+    const testAxles = Array.from({ length: 10 }, () => ({
+      left: (Math.floor(Math.random() * 2000) + 1000).toString(),
+      right: (Math.floor(Math.random() * 2000) + 1000).toString(),
+    }))
+    setForm(prev => ({
+      ...prev,
+      no: 'TEST-' + Math.floor(Math.random() * 1000).toString().padStart(3, '0'),
+      operator: 'NV-TEST',
+      licensePlate: '43C-' + Math.floor(Math.random() * 90000 + 10000),
+      tempAxleCount: 10,
+      axles: testAxles
+    }))
+    setErrors({})
   }
 
   const handlePrint = async () => {
@@ -105,6 +127,12 @@ export default function App() {
             >
               {isConnected ? `● QZ TRAY (AIMO)` : '○ KẾT NỐI QZ TRAY'}
             </button>
+            <button
+              onClick={handleFillTestData}
+              className="cursor-pointer text-[10px] font-bold px-3 py-1 rounded-full border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all"
+            >
+              ⚡ DỮ LIỆU TEST (10 TRỤC)
+            </button>
             {qzError && <span className="text-[8px] text-red-400 font-medium max-w-[150px] text-right">{qzError}</span>}
           </div>
         </header>
@@ -137,7 +165,7 @@ export default function App() {
             </div>
 
             <div className="space-y-1.5 md:col-span-2">
-              <label className="text-xs font-bold text-slate-500 uppercase">Biển số xe</label>
+              <label className="text-xs font-bold text-slate-500 uppercase">Biển số xe (Vehicle)</label>
               <input
                 type="text"
                 placeholder="VD: 43C-123.45"
