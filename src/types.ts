@@ -1,4 +1,4 @@
 export interface AxleData {
-  left: string;
-  right: string;
+  left: string
+  right: string
 }

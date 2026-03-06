@@ -11,7 +11,7 @@ export const COMMANDS = {
   HW_INIT: new Uint8Array([ESC, 0x40]),
   TEXT_ALIGN_LEFT: new Uint8Array([ESC, 0x61, 0x00]),
   TEXT_SIZE_NORMAL: new Uint8Array([ESC, 0x21, 0x00]),
-  PAPER_CUT: new Uint8Array([GS, 0x56, 0x42, 0x00]),
+  PAPER_CUT: new Uint8Array([GS, 0x56, 0x42, 0x00])
 } as const
 
 export class EscPosBuilder {
@@ -110,22 +110,16 @@ export function buildReceiptLines(data: ReceiptData, no: string = ''): string[] 
   return lines
 }
 
-export const encodeWeighingReport = (
-  data: ReceiptData,
-  no: string = ''
-): Uint8Array => {
+export const encodeWeighingReport = (data: ReceiptData, no: string = ''): Uint8Array => {
   const b = new EscPosBuilder()
 
-  b.add(COMMANDS.HW_INIT)
-    .add(COMMANDS.TEXT_SIZE_NORMAL)
-    .add(COMMANDS.TEXT_ALIGN_LEFT)
+  b.add(COMMANDS.HW_INIT).add(COMMANDS.TEXT_SIZE_NORMAL).add(COMMANDS.TEXT_ALIGN_LEFT)
 
   for (const line of buildReceiptLines(data, no)) {
     b.line(line)
   }
 
-  b.feed(3)
-    .add(COMMANDS.PAPER_CUT)
+  b.feed(3).add(COMMANDS.PAPER_CUT)
 
   return b.build()
 }
