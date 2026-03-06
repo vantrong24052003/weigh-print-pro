@@ -1,5 +1,4 @@
 import type { AxleData } from '@/types'
-import { formatDate } from './date'
 
 const LINE_WIDTH = 32
 
@@ -86,7 +85,7 @@ export function buildReceiptLines(data: ReceiptData, no: string = ''): string[] 
   push(separator())
   push('')
   push(padLine(`NO. : ${no}`))
-  push(padLine(`Date: ${formatDate(data.date)}`))
+  push(padLine(`Date: ${data.date}`))
   push(padLine(`Time: ${data.time}`))
   push(padLine(`Vehicle: ${data.licensePlate || ''}`))
   push(padLine(`Operator:${data.operator || ''}`))
