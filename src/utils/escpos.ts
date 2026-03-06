@@ -1,7 +1,7 @@
 import type { AxleData } from '@/types'
 import { formatDate } from './date'
 
-const LINE_WIDTH = 32
+const LINE_WIDTH = 28
 
 export const ESC = 0x1b
 export const GS = 0x1d
@@ -15,6 +15,7 @@ export const COMMANDS = {
   TEXT_BOLD_ON: new Uint8Array([ESC, 0x45, 0x01]),
   TEXT_BOLD_OFF: new Uint8Array([ESC, 0x45, 0x00]),
   TEXT_SIZE_NORMAL: new Uint8Array([ESC, 0x21, 0x00]),
+  TEXT_SIZE_TALL: new Uint8Array([ESC, 0x21, 0x10]),
   TEXT_SIZE_LARGE: new Uint8Array([ESC, 0x21, 0x30]),
   PAPER_CUT: new Uint8Array([GS, 0x56, 0x42, 0x00]),
 } as const
@@ -108,7 +109,7 @@ export function buildReceiptLines(data: ReceiptData, no: string = '0011'): strin
   })
 
   push(separator())
-  push(padLine(`Gross: ${data.grossWeight}kg`))
+  push(fillLine('Gross:', `${data.grossWeight}kg`))
   push(separator())
 
   return lines
