@@ -1,7 +1,7 @@
 import type { AxleData } from '@/types'
 import { formatDate } from './date'
 
-const LINE_WIDTH = 28
+const LINE_WIDTH = 32
 
 export const ESC = 0x1b
 export const GS = 0x1d
@@ -10,13 +10,7 @@ export const LF = 0x0a
 export const COMMANDS = {
   HW_INIT: new Uint8Array([ESC, 0x40]),
   TEXT_ALIGN_LEFT: new Uint8Array([ESC, 0x61, 0x00]),
-  TEXT_ALIGN_CENTER: new Uint8Array([ESC, 0x61, 0x01]),
-  TEXT_ALIGN_RIGHT: new Uint8Array([ESC, 0x61, 0x02]),
-  TEXT_BOLD_ON: new Uint8Array([ESC, 0x45, 0x01]),
-  TEXT_BOLD_OFF: new Uint8Array([ESC, 0x45, 0x00]),
   TEXT_SIZE_NORMAL: new Uint8Array([ESC, 0x21, 0x00]),
-  TEXT_SIZE_TALL: new Uint8Array([ESC, 0x21, 0x10]),
-  TEXT_SIZE_LARGE: new Uint8Array([ESC, 0x21, 0x30]),
   PAPER_CUT: new Uint8Array([GS, 0x56, 0x42, 0x00]),
 } as const
 
@@ -79,11 +73,12 @@ export type ReceiptData = {
   licensePlate: string
   date: string
   time: string
+  operator: string
   axles: AxleData[]
   grossWeight: number
 }
 
-export function buildReceiptLines(data: ReceiptData, no: string = '0011'): string[] {
+export function buildReceiptLines(data: ReceiptData, no: string = ''): string[] {
   const lines: string[] = []
   const push = (...l: string[]) => lines.push(...l)
 
@@ -93,8 +88,8 @@ export function buildReceiptLines(data: ReceiptData, no: string = '0011'): strin
   push(padLine(`NO. : ${no}`))
   push(padLine(`Date: ${formatDate(data.date)}`))
   push(padLine(`Time: ${data.time}`))
-  push(padLine(`Vehicle: ${data.licensePlate || '0000'}`))
-  push(padLine(`Operator:00`))
+  push(padLine(`Vehicle: ${data.licensePlate || ''}`))
+  push(padLine(`Operator:${data.operator || ''}`))
   push('')
 
   data.axles.forEach((axle, idx) => {
@@ -117,7 +112,7 @@ export function buildReceiptLines(data: ReceiptData, no: string = '0011'): strin
 
 export const encodeWeighingReport = (
   data: ReceiptData,
-  no: string = '0011'
+  no: string = ''
 ): Uint8Array => {
   const b = new EscPosBuilder()
 

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import * as yup from 'yup'
 import type { AxleData } from '@/types'
 import { weighingSchema } from '@/schemas/weighingSchema'
+import { getCurrentDate, getCurrentTime } from '@/utils/date'
 import { AxleRow } from '@/components/weighing-report/AxleRow'
 import { PrintPreview } from '@/components/weighing-report/PrintPreview'
 import { useQzPrinter } from '@/hooks/useQzPrinter'
@@ -10,16 +11,13 @@ import '@/App.css'
 
 export default function App() {
   const [form, setForm] = useState({
-    licensePlate: '0000',
-    date: '2026-02-26',
-    time: '07:55:27',
-    tempAxleCount: 4,
-    axles: [
-      { left: '4675', right: '4475' },
-      { left: '6915', right: '7435' },
-      { left: '5355', right: '6035' },
-      { left: '5220', right: '4420' },
-    ] as AxleData[]
+    no: '',
+    operator: '',
+    licensePlate: '',
+    date: getCurrentDate(),
+    time: getCurrentTime(),
+    tempAxleCount: 0,
+    axles: [] as AxleData[]
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showPreview, setShowPreview] = useState(false)
@@ -54,42 +52,38 @@ export default function App() {
     setErrors({})
   }
 
-  const handlePrint = async () => {
+  const validateForm = async () => {
     try {
       setErrors({})
       await weighingSchema.validate(form, { abortEarly: false })
+      return true
+    } catch (err) {
+      if (err instanceof yup.ValidationError) {
+        const mappedErrors = err.inner.reduce((acc, current) => {
+          if (current.path) acc[current.path] = current.message
+          return acc
+        }, {} as Record<string, string>)
+        setErrors(mappedErrors)
+      }
+      return false
+    }
+  }
 
+  const handlePrint = async () => {
+    if (await validateForm()) {
       if (isConnected) {
-        const bytes = encodeWeighingReport({ ...form, grossWeight })
+        const bytes = encodeWeighingReport({ ...form, grossWeight }, form.no)
         await qzPrint(bytes)
         setShowPreview(false)
       } else {
         alert('Chưa kết nối QZ Tray! Vui lòng nhấn nút "KẾT NỐI QZ TRAY" ở góc trên bên phải.')
       }
-    } catch (err) {
-      if (err instanceof yup.ValidationError) {
-        const mappedErrors = err.inner.reduce((acc, current) => {
-          if (current.path) acc[current.path] = current.message
-          return acc
-        }, {} as Record<string, string>)
-        setErrors(mappedErrors)
-      }
     }
   }
 
   const handleShowPreview = async () => {
-    try {
-      setErrors({})
-      await weighingSchema.validate(form, { abortEarly: false })
+    if (await validateForm()) {
       setShowPreview(true)
-    } catch (err) {
-      if (err instanceof yup.ValidationError) {
-        const mappedErrors = err.inner.reduce((acc, current) => {
-          if (current.path) acc[current.path] = current.message
-          return acc
-        }, {} as Record<string, string>)
-        setErrors(mappedErrors)
-      }
     }
   }
 
@@ -104,7 +98,7 @@ export default function App() {
           <div className="flex flex-col items-end gap-2">
             <button
               onClick={isConnected ? disconnect : connect}
-              className={`text-[10px] font-bold px-3 py-1 rounded-full border transition-all ${isConnected
+              className={`cursor-pointer text-[10px] font-bold px-3 py-1 rounded-full border transition-all ${isConnected
                 ? 'bg-green-50 border-green-200 text-green-700'
                 : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-900'
                 }`}
@@ -117,6 +111,31 @@ export default function App() {
 
         <main className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase">Số phiếu (NO.)</label>
+              <input
+                type="text"
+                placeholder="VD: 0011"
+                className={`w-full bg-slate-50 border ${errors.no ? 'border-red-500' : 'border-slate-200'} rounded-lg p-3 outline-none focus:border-slate-900 transition-colors`}
+                value={form.no}
+                onChange={e => handleUpdate('no', e.target.value)}
+              />
+              {errors.no && <p className="text-[10px] text-red-500 font-bold uppercase">{errors.no}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase">Nhân viên (Operator)</label>
+              <input
+                type="text"
+                placeholder="VD: 01"
+                className={`w-full bg-slate-50 border ${errors.operator ? 'border-red-500' : 'border-slate-200'} rounded-lg p-3 outline-none focus:border-slate-900 transition-colors`}
+                value={form.operator}
+                onChange={e => handleUpdate('operator', e.target.value)}
+              />
+              {errors.operator && <p className="text-[10px] text-red-500 font-bold uppercase">{errors.operator}</p>}
+            </div>
+
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-xs font-bold text-slate-500 uppercase">Biển số xe</label>
               <input
@@ -129,25 +148,32 @@ export default function App() {
               {errors.licensePlate && <p className="text-[10px] text-red-500 font-bold uppercase">{errors.licensePlate}</p>}
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase">Ngày</label>
-              <input
-                type="date"
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 outline-none focus:border-slate-900 transition-colors text-sm"
-                value={form.date}
-                onChange={e => handleUpdate('date', e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase">Giờ</label>
-              <input
-                type="time"
-                step="1"
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 outline-none focus:border-slate-900 transition-colors text-sm"
-                value={form.time}
-                onChange={e => handleUpdate('time', e.target.value)}
-              />
+            <div className="space-y-1.5 md:col-span-2">
+              <div className="flex justify-between items-center mb-1.5 mt-2">
+                <label className="text-xs font-bold text-slate-500 uppercase">Ngày giờ cân</label>
+                <button
+                  onClick={() => setForm(f => ({ ...f, date: getCurrentDate(), time: getCurrentTime() }))}
+                  className="cursor-pointer flex items-center gap-1.5 text-[10px] font-bold bg-slate-200 text-slate-900 px-3 py-1.5 rounded-lg hover:bg-slate-300 transition-colors uppercase"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                  LẤY HIỆN TẠI
+                </button>
+              </div>
+              <div className="flex gap-4">
+                <input
+                  type="date"
+                  className="w-1/2 bg-slate-50 border border-slate-200 rounded-lg p-3 outline-none focus:border-slate-900 transition-colors text-sm"
+                  value={form.date}
+                  onChange={e => handleUpdate('date', e.target.value)}
+                />
+                <input
+                  type="time"
+                  step="1"
+                  className="w-1/2 bg-slate-50 border border-slate-200 rounded-lg p-3 outline-none focus:border-slate-900 transition-colors text-sm"
+                  value={form.time}
+                  onChange={e => handleUpdate('time', e.target.value)}
+                />
+              </div>
             </div>
           </div>
 
@@ -163,7 +189,7 @@ export default function App() {
               />
               <button
                 onClick={handleAddAxles}
-                className="px-6 bg-slate-200 text-slate-900 rounded-lg hover:bg-slate-300 transition-colors font-bold uppercase text-xs"
+                className="cursor-pointer px-6 bg-slate-200 text-slate-900 rounded-lg hover:bg-slate-300 transition-colors font-bold uppercase text-xs"
               >
                 Thêm
               </button>
@@ -204,16 +230,10 @@ export default function App() {
                 {grossWeight.toLocaleString()} <span className="text-sm font-normal text-slate-400 uppercase">kg</span>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex justify-end">
               <button
                 onClick={handleShowPreview}
-                className="h-12 px-5 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors font-bold uppercase text-[10px]"
-              >
-                Xem trước
-              </button>
-              <button
-                onClick={handleShowPreview}
-                className="h-12 px-6 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors font-bold uppercase tracking-wider text-xs shadow-sm active:scale-95"
+                className="cursor-pointer h-12 px-6 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors font-bold uppercase tracking-wider text-xs shadow-sm active:scale-95"
               >
                 In Phiếu
               </button>
@@ -229,7 +249,7 @@ export default function App() {
       {showPreview && (
         <PrintPreview
           data={{ ...form, grossWeight }}
-          no="0011"
+          no={form.no}
           onClose={() => setShowPreview(false)}
           onQzPrint={handlePrint}
         />
