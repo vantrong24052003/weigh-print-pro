@@ -1,6 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import * as yup from 'yup'
-import { getCurrentDate, getCurrentTime } from '@/utils/date'
 import type { AxleData } from '@/types'
 import { weighingSchema } from '@/schemas/weighingSchema'
 import { AxleRow } from '@/components/weighing-report/AxleRow'
@@ -11,22 +10,21 @@ import '@/App.css'
 
 export default function App() {
   const [form, setForm] = useState({
-    licensePlate: '92A-123.45',
-    date: '',
-    time: '',
-    tempAxleCount: 2,
+    licensePlate: '0000',
+    date: '2026-02-26',
+    time: '07:55:27',
+    tempAxleCount: 4,
     axles: [
-      { left: '1000', right: '1200' },
-      { left: '2000', right: '1800' }
+      { left: '4675', right: '4475' },
+      { left: '6915', right: '7435' },
+      { left: '5355', right: '6035' },
+      { left: '5220', right: '4420' },
     ] as AxleData[]
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showPreview, setShowPreview] = useState(false)
   const { connect, disconnect, print: qzPrint, isConnected, error: qzError } = useQzPrinter()
 
-  useEffect(() => {
-    setForm(prev => ({ ...prev, date: getCurrentDate(), time: getCurrentTime() }))
-  }, [])
 
   const grossWeight = useMemo(() =>
     form.axles.reduce((total, axle) => total + (parseFloat(axle.left) || 0) + (parseFloat(axle.right) || 0), 0)
@@ -231,6 +229,7 @@ export default function App() {
       {showPreview && (
         <PrintPreview
           data={{ ...form, grossWeight }}
+          no="0011"
           onClose={() => setShowPreview(false)}
           onQzPrint={handlePrint}
         />
